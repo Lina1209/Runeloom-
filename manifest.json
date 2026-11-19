@@ -1,0 +1,13 @@
+{
+  "name": "Runeloom — weave words into runes",
+  "short_name": "Runeloom",
+  "description": "Руны, древние письма и магические шрифты: переводчик, поэмы, клавиатура, свои шрифты.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "lang": "ru",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
