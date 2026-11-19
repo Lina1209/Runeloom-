@@ -3,226 +3,427 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Runeloom — weave words into runes</title>
-<meta name="description" content="Runeloom — вплетайте слова в руны и древние письма. Футарк, Огам, Готский, Глаголица, Кирт Толкина, Aurebesh, свои шрифты, поэмы и руническая клавиатура."/>
+<title>RuneWrite Studio — рунический переводчик</title>
+<meta name="description" content="Руны, древние письма, Кирт Толкина, Aurebesh, Theban, рунические поэмы и клавиатура, свои шрифты."/>
 <meta name="theme-color" content="#0a0e1a"/>
-<meta property="og:title" content="Runeloom — weave words into runes"/>
-<meta property="og:description" content="Руны, древние письма и магические шрифты в одном браузере."/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" href="icon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="icon.svg"/>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Runic&family=Noto+Sans+Ogham&family=Noto+Sans+Gothic&family=Noto+Sans+Old+Italic&family=Noto+Sans+Phoenician&family=Noto+Sans+Glagolitic&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Runic&family=Noto+Sans+Ogham&family=Noto+Sans+Gothic&family=Noto+Sans+Old+Italic&family=Noto+Sans+Phoenician&family=Noto+Sans+Old+Turkic&family=Noto+Sans+Old+Hungarian&family=Noto+Sans+Glagolitic&family=Noto+Sans+Symbols+2&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet"/>
 <style>
-  :root{--gold:#e8c874;--gold2:#d4af37;--ink:#0a0e1a}
-  html{scroll-behavior:smooth}
+  :root{--gold:#e8c874;--gold2:#d4af37;--ink:#0a0e1a;--line:rgba(232,200,116,.18)}
+  html,body{height:100%}
   body{background:var(--ink);color:#e7e3d8;font-family:'Cormorant Garamond',Georgia,serif;overflow-x:hidden}
+  button,select,input,textarea,.ui{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
   .display{font-family:'Cinzel',serif;letter-spacing:.02em}
+  .prose{font-family:'Cormorant Garamond',Georgia,serif}
   .gold{background:linear-gradient(135deg,#f7e3a8,#e8c874 40%,#d4af37 70%,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .glow{position:fixed;border-radius:50%;filter:blur(90px);opacity:.35;pointer-events:none;z-index:0}
-  .glass{background:rgba(255,255,255,.035);border:1px solid rgba(232,200,116,.18);backdrop-filter:blur(8px)}
-  .glass:hover{border-color:rgba(232,200,116,.4)}
-  .btn-gold{background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-weight:700;box-shadow:0 6px 24px rgba(212,175,55,.35)}
-  .btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
-  .btn-ghost{border:1px solid rgba(232,200,116,.4);color:#e8c874}
-  .btn-ghost:hover{background:rgba(232,200,116,.1)}
-  .rune-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-  .float-rune{position:absolute;font-family:'Noto Sans Runic';color:rgba(232,200,116,.10);animation:drift linear infinite;user-select:none}
-  @keyframes drift{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-26px) rotate(6deg)}100%{transform:translateY(0) rotate(0)}}
-  @keyframes twinkle{0%,100%{opacity:.06}50%{opacity:.18}}
-  .chip{border:1px solid rgba(232,200,116,.25);color:#cfc7b4}
-  .chip.active{background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;border-color:transparent;font-weight:600}
-  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(232,200,116,.5),transparent)}
-  .fade-up{opacity:0;transform:translateY(24px);transition:.7s}
-  .fade-up.in{opacity:1;transform:none}
-  ::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#3a3320;border-radius:5px}
-  .sample{font-size:2rem;line-height:1.2;color:#f0ead8}
+  .muted{color:#cfc7b4}.muted2{color:#8f8873}
+  .panel{background:rgba(255,255,255,.035);border:1px solid var(--line);backdrop-filter:blur(8px)}
+  .card{background:rgba(10,14,26,.55);border:1px solid var(--line)}
+  .btn{background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-weight:700}
+  .btn:hover{filter:brightness(1.08)}
+  .btn2{border:1px solid rgba(232,200,116,.35);color:#e8c874;background:rgba(232,200,116,.05)}
+  .btn2:hover{background:rgba(232,200,116,.14)}
+  .btn-danger{border:1px solid rgba(244,63,94,.4);color:#fda4af;background:rgba(244,63,94,.08)}
+  .btn-danger:hover{background:rgba(244,63,94,.2)}
+  .btn-ok{background:linear-gradient(135deg,#34d399,#10b981);color:#06281c;font-weight:700}
+  .tabbtn{color:#cfc7b4;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+  .tabbtn.active{background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-weight:700;border-color:transparent}
+  .dirbtn{color:#cfc7b4;background:rgba(10,14,26,.6)}
+  .dirbtn.on{background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-weight:700}
+  .inp,.sel{background:rgba(10,14,26,.7);border:1px solid rgba(232,200,116,.25);color:#e7e3d8}
+  .inp:focus,.sel:focus{outline:none;border-color:var(--gold)}
+  .glyph-card{cursor:pointer;transition:.12s}.glyph-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .sym-btn{cursor:pointer;transition:.1s;background:rgba(10,14,26,.55);border:1px solid var(--line)}.sym-btn:hover{border-color:var(--gold);transform:scale(1.1)}
+  .kb-key{cursor:pointer;transition:.1s;background:rgba(10,14,26,.55);border:1px solid var(--line)}.kb-key:hover{background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408}
+  .histchip{background:rgba(232,200,116,.08);border:1px solid var(--line);color:#cfc7b4}.histchip:hover{background:rgba(232,200,116,.18)}
+  .ring-gold{box-shadow:0 0 0 2px var(--gold2)}
+  .rune-out{line-height:1.5;word-break:break-word;white-space:pre-wrap}
+  input[type=range]{accent-color:var(--gold2)}
+  .dropzone.drag{border-color:var(--gold);background:rgba(232,200,116,.08)}
+  .glow{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+  .rune-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .float-rune{position:absolute;font-family:'Noto Sans Runic';color:rgba(232,200,116,.07);animation:drift linear infinite;user-select:none}
+  @keyframes drift{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-22px) rotate(5deg)}100%{transform:translateY(0) rotate(0)}}
+  ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#3a3320;border-radius:5px}
 </style>
 </head>
-<body class="relative">
+<body class="min-h-screen flex flex-col relative">
 
-<div class="glow" style="width:480px;height:480px;background:#4f46e5;top:-120px;left:-120px"></div>
-<div class="glow" style="width:420px;height:420px;background:#7c3aed;top:30%;right:-140px"></div>
-<div class="glow" style="width:380px;height:380px;background:#d4af37;bottom:-120px;left:20%;opacity:.18"></div>
+<div class="glow" style="width:460px;height:460px;background:#4f46e5;top:-140px;left:-120px;opacity:.28"></div>
+<div class="glow" style="width:420px;height:420px;background:#7c3aed;top:35%;right:-150px;opacity:.25"></div>
+<div class="glow" style="width:360px;height:360px;background:#d4af37;bottom:-140px;left:25%;opacity:.14"></div>
+<div class="rune-bg" id="runeBg"></div>
 
-<nav class="relative z-30 sticky top-0 backdrop-blur-md bg-[#0a0e1a]/80 border-b border-[#e8c874]/15">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-    <a href="#top" class="flex items-center gap-2.5">
-      <span class="w-9 h-9 rounded-full flex items-center justify-center text-xl" style="background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-family:'Noto Sans Runic'">ᚱ</span>
-      <span class="display text-lg font-bold gold">Runeloom</span>
-    </a>
-    <div class="hidden md:flex items-center gap-6 text-sm text-[#cfc7b4]">
-      <a href="#demo" class="hover:text-[#e8c874]">Демо</a>
-      <a href="#features" class="hover:text-[#e8c874]">Возможности</a>
-      <a href="#scripts" class="hover:text-[#e8c874]">Алфавиты</a>
-      <a href="#ecosystem" class="hover:text-[#e8c874]">Экосистема</a>
+<header class="relative z-30 panel px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sticky top-0">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style="background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-family:'Noto Sans Runic'">ᚱ</div>
+    <div>
+      <h1 class="display text-lg sm:text-xl font-bold gold leading-tight">RuneWrite Studio</h1>
+      <p class="text-[11px] muted hidden sm:block">Руны · древние письма · поэмы · клавиатура</p>
     </div>
-    <a id="navLaunch" href="#demo" class="btn-gold text-sm px-4 py-2 rounded-full transition">Открыть ↗</a>
   </div>
-</nav>
-
-<header id="top" class="relative z-10">
-  <div class="rune-bg" id="runeBg"></div>
-  <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-24 text-center">
-    <p class="display tracking-[.35em] text-[#e8c874]/70 text-xs sm:text-sm mb-5">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ · ANCIENT SCRIPTS STUDIO</p>
-    <h1 class="display font-black gold text-6xl sm:text-8xl mb-4">Runeloom</h1>
-    <p class="text-2xl sm:text-3xl italic text-[#e7e3d8]/90 mb-3">Weave words into runes</p>
-    <p class="max-w-2xl mx-auto text-lg text-[#cfc7b4] mb-9">Вплетите слова в руны и древние письма. Футарк, Огам, Готский, Глаголица, Кирт Толкина, Aurebesh, руны ведьм и ваши собственные шрифты — с поэмами, клавиатурой и экспортом в картинку.</p>
-    <div class="flex flex-wrap gap-3 justify-center">
-      <a id="heroLaunch" href="#demo" class="btn-gold px-7 py-3.5 rounded-full text-lg transition">✦ Открыть приложение</a>
-      <a href="#demo" class="btn-ghost px-7 py-3.5 rounded-full text-lg transition">Попробовать демо</a>
-    </div>
-    <div class="mt-14 flex flex-wrap justify-center gap-x-8 gap-y-2 text-[#cfc7b4]/80 text-sm">
-      <span>ᚱ 13+ письменностей</span><span>ᛟ RU + EN</span><span>ᛋ поэмы и клавиатура</span><span>ᚠ свои шрифты</span>
-    </div>
+  <div class="flex items-center gap-2">
+    <span id="fontStatus" class="text-[11px] muted2 hidden sm:inline">⏳ шрифты…</span>
+    <button id="installBtn" class="hidden btn text-sm px-3 py-1.5 rounded-full">📲 Установить</button>
   </div>
 </header>
 
-<section id="demo" class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-12 fade-up">
-  <div class="glass rounded-3xl p-6 sm:p-8">
-    <h2 class="display text-2xl sm:text-3xl gold text-center mb-1">Живое демо</h2>
-    <p class="text-center text-[#cfc7b4] mb-6">Введите слово — станок соткёт его рунами</p>
-    <div class="flex flex-wrap gap-2 justify-center mb-5" id="demoChips"></div>
-    <input id="demoInput" value="Привет, мир" class="w-full bg-[#0a0e1a]/70 border border-[#e8c874]/25 rounded-xl px-4 py-3 text-lg text-center text-[#e7e3d8] focus:outline-none focus:border-[#e8c874]" placeholder="Ваш текст…"/>
-    <div class="mt-4 bg-[#f4efe2] rounded-2xl p-6 min-h-[110px] flex items-center justify-center">
-      <div id="demoOutput" class="text-center text-[#1a1408]" style="font-family:'Noto Sans Runic';font-size:44px;line-height:1.4;word-break:break-word"></div>
+<nav class="relative z-20 flex gap-1 px-3 sm:px-6 pt-3 overflow-x-auto">
+  <button class="tabbtn active px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="translate">ᚱ Переводчик</button>
+  <button class="tabbtn px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="keyboard">⌨ Клавиатура</button>
+  <button class="tabbtn px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="alphabet">📜 Алфавит</button>
+  <button class="tabbtn px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="poems">📖 Поэмы</button>
+  <button class="tabbtn px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="symbols">✨ Символы</button>
+  <button class="tabbtn px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="birth">🎂 Рождение</button>
+  <button class="tabbtn px-4 py-2 rounded-t-lg text-sm whitespace-nowrap" data-tab="fonts">🔤 Шрифты</button>
+</nav>
+
+<main class="relative z-10 flex-1 w-full max-w-5xl mx-auto px-3 sm:px-6 pb-10">
+
+  <section id="tab-translate" class="tabpane">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5">
+      <div class="flex flex-wrap gap-3 items-end mb-4">
+        <label class="flex-1 min-w-[220px] text-sm"><span class="muted text-xs block mb-1 ui">Алфавит / шрифт</span>
+          <select id="alphabetSelect" class="sel w-full rounded-lg px-3 py-2.5 text-sm"></select></label>
+        <div class="flex rounded-lg overflow-hidden border" style="border-color:var(--line)">
+          <button id="dirFwd" class="dirbtn on px-3 py-2.5 text-sm">Текст → Руны</button>
+          <button id="dirRev" class="dirbtn px-3 py-2.5 text-sm">Руны → Текст</button>
+        </div>
+      </div>
+      <p id="alphabetDesc" class="text-xs muted mb-3 prose"></p>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <div class="flex justify-between items-center mb-1"><span class="text-xs muted ui" id="inputLabel">Ваш текст (русский / английский)</span><button id="clearBtn" class="text-xs muted2 hover:text-rose-400 ui">очистить</button></div>
+          <textarea id="inputText" rows="5" placeholder="Введите текст… например: Привет или Lina" class="inp w-full rounded-lg p-3 text-base"></textarea>
+          <div class="flex flex-wrap gap-2 mt-2 items-center">
+            <label id="phoneticWrap" class="flex items-center gap-1.5 text-xs muted cursor-pointer ui"><input type="checkbox" id="phoneticToggle" checked/> Фонетика (англ.)</label>
+            <label id="revTargetWrap" class="hidden items-center gap-1.5 text-xs muted cursor-pointer ui"><input type="checkbox" id="revCyrToggle"/> в кириллицу</label>
+            <button id="pasteBtn" class="btn2 text-xs px-2 py-1 rounded ui">📋 Вставить</button>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-1"><span class="text-xs muted ui">Результат</span><span id="charCount" class="text-xs muted2 ui"></span></div>
+          <div id="outputBox" class="rounded-lg p-4 min-h-[130px] flex items-center justify-center border" style="background:#f4efe2;border-color:var(--line)"><div id="outputText" class="rune-out text-center w-full" style="font-size:40px;color:#1a1408">ᚱᚢᚾᚨ</div></div>
+          <div class="flex flex-wrap gap-2 mt-2 items-center">
+            <button id="copyBtn" class="btn text-xs px-3 py-1.5 rounded-lg ui">📋 Копировать</button>
+            <button id="pngBtn" class="btn2 text-xs px-3 py-1.5 rounded-lg ui">🖼 PNG</button>
+            <select id="outBg" class="sel text-xs rounded px-2 py-1.5"><option value="light">Фон: светлый</option><option value="dark">Фон: тёмный</option><option value="transparent">Фон: прозрачный</option></select>
+            <label class="text-xs muted flex items-center gap-1 ml-auto ui">Размер<input type="range" id="sizeSlider" min="24" max="90" value="40" class="w-20"/></label>
+          </div>
+        </div>
+      </div>
+      <div id="historyWrap" class="mt-4 hidden"><span class="text-xs muted2 block mb-1 ui">Недавние:</span><div id="historyChips" class="flex flex-wrap gap-1.5"></div></div>
     </div>
-    <div class="flex justify-center gap-3 mt-4">
-      <button id="demoCopy" class="btn-ghost px-4 py-2 rounded-full text-sm">📋 Копировать</button>
-      <a id="demoFull" href="#" class="btn-gold px-4 py-2 rounded-full text-sm">Полная версия ↗</a>
+  </section>
+
+  <section id="tab-keyboard" class="tabpane hidden">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h2 class="display text-xl gold">⌨ Руническая клавиатура</h2><span class="text-xs muted ui" id="kbAlphaName"></span></div>
+      <p class="text-xs muted mb-3 prose">Нажимайте кнопки или печатайте на обычной клавиатуре — появятся руны выбранного алфавита.</p>
+      <div id="kbOutputBox" class="rounded-lg p-4 min-h-[90px] mb-3 border flex items-center" style="background:#f4efe2;border-color:var(--line)"><div id="kbOutput" class="rune-out w-full" style="font-size:36px;color:#1a1408"></div></div>
+      <div class="flex flex-wrap gap-2 mb-3">
+        <button id="kbSpace" class="btn2 text-xs px-3 py-1.5 rounded ui">Пробел</button>
+        <button id="kbBack" class="btn2 text-xs px-3 py-1.5 rounded ui">⌫ Стереть</button>
+        <button id="kbClear" class="btn-danger text-xs px-3 py-1.5 rounded ui">Очистить</button>
+        <button id="kbCopy" class="btn text-xs px-3 py-1.5 rounded ui">📋 Копировать</button>
+        <button id="kbPng" class="btn2 text-xs px-3 py-1.5 rounded ui">🖼 PNG</button>
+        <button id="kbToSend" class="btn2 text-xs px-3 py-1.5 rounded ui">→ В переводчик</button>
+      </div>
+      <div id="kbKeys" class="flex flex-wrap gap-1.5"></div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="features" class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16">
-  <div class="text-center mb-12 fade-up">
-    <h2 class="display text-3xl sm:text-4xl gold mb-3">Возможности станка</h2>
-    <div class="divider max-w-xs mx-auto"></div>
-  </div>
-  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="featureGrid"></div>
-</section>
+  <section id="tab-alphabet" class="tabpane hidden">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><h2 class="display text-xl gold" id="alphaTitle">Алфавит</h2><span class="text-xs muted ui">Нажмите на знак, чтобы вставить</span></div>
+      <div id="alphaTable" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+    </div>
+  </section>
 
-<section id="scripts" class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16">
-  <div class="text-center mb-12 fade-up">
-    <h2 class="display text-3xl sm:text-4xl gold mb-3">Гримуар письменностей</h2>
-    <p class="text-[#cfc7b4]">Каждая нить — своя эпоха и культура</p>
-    <div class="divider max-w-xs mx-auto mt-4"></div>
-  </div>
-  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="scriptGrid"></div>
-</section>
+  <section id="tab-poems" class="tabpane hidden">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><h2 class="display text-xl gold">📖 Рунические поэмы</h2>
+        <select id="poemSelect" class="sel rounded-lg px-3 py-2 text-sm"><option value="anglo">Англосаксонская (Футорк)</option><option value="icelandic">Исландская (Младший Футарк)</option></select></div>
+      <p id="poemIntro" class="text-xs muted mb-4 prose"></p>
+      <div id="poemList" class="space-y-2"></div>
+    </div>
+  </section>
 
-<section id="ecosystem" class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16">
-  <div class="text-center mb-12 fade-up">
-    <h2 class="display text-3xl sm:text-4xl gold mb-3">Мастерская Lina Winter</h2>
-    <p class="text-[#cfc7b4]">Runeloom — часть семьи инструментов для письма и шрифтов</p>
-    <div class="divider max-w-xs mx-auto mt-4"></div>
-  </div>
-  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" id="ecoGrid"></div>
-</section>
+  <section id="tab-symbols" class="tabpane hidden">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5">
+      <h2 class="display text-xl gold mb-1">✨ Символы и знаки</h2>
+      <p class="text-xs muted mb-4 prose">Нажмите на символ — он скопируется.</p>
+      <div id="symbolsBox" class="space-y-4"></div>
+    </div>
+  </section>
 
-<footer class="relative z-10 border-t border-[#e8c874]/15 mt-8">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 text-center">
-    <div class="display gold text-2xl mb-2">Runeloom</div>
-    <p class="text-[#cfc7b4]/70 text-sm mb-4">ᚹᛖᚨᚹᛖ · слова становятся рунами</p>
-    <p class="text-[#cfc7b4]/50 text-xs">Создано Lina Winter · шрифты под лицензией OFL · данные остаются на вашем устройстве</p>
-  </div>
-</footer>
+  <section id="tab-birth" class="tabpane hidden">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5 space-y-5">
+      <div><h2 class="display text-xl gold mb-1">🎂 Руна по дате рождения</h2><p class="text-xs muted mb-3 prose">Рунический календарь Старшего Футарка.</p>
+        <input type="date" id="birthDate" class="inp rounded-lg px-3 py-2 text-sm"/><div id="birthResult" class="mt-3"></div></div>
+      <div class="pt-4" style="border-top:1px solid var(--line)"><h2 class="display text-xl gold mb-1">🔤 Руны имени</h2><p class="text-xs muted mb-3 prose">Первая руна — ведущая.</p>
+        <input type="text" id="nameInput" placeholder="Например: Лина" class="inp rounded-lg px-3 py-2 text-sm w-full max-w-xs"/><div id="nameResult" class="mt-3"></div></div>
+    </div>
+  </section>
 
-<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#1a1408] font-semibold text-sm px-5 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition z-50"></div>
+  <section id="tab-fonts" class="tabpane hidden">
+    <div class="panel rounded-b-xl rounded-tr-xl p-4 sm:p-5 space-y-5">
+      <div><h2 class="display text-xl gold mb-1">🪄 Фэнтези и магия</h2><p class="text-xs muted mb-3 prose">Кирт Толкина и Aurebesh загружаются автоматически. Для Theban загрузите шрифт один раз.</p><div id="fantasyList" class="space-y-2"></div></div>
+      <div class="pt-4" style="border-top:1px solid var(--line)"><h2 class="display text-xl gold mb-1">🌙 Шрифты Lina Winter</h2><p class="text-xs muted mb-3 prose">Руны Ведьм и Исландские руны из вашего репозитория.</p><div id="repoFontList" class="space-y-2"></div></div>
+      <div class="pt-4" style="border-top:1px solid var(--line)"><h2 class="display text-xl gold mb-1">📥 Загрузить свой шрифт</h2><p class="text-xs muted mb-3 prose">TTF / OTF / WOFF — свой почерк, PictishThebian и любой другой.</p>
+        <div id="dropZone" class="dropzone border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition" style="border-color:rgba(232,200,116,.35)"><div class="text-3xl mb-2">📥</div><p class="text-sm muted ui">Перетащите файл или нажмите для выбора</p><p class="text-xs muted2 mt-1 ui">.ttf · .otf · .woff</p><input type="file" id="fontFile" accept=".ttf,.otf,.woff,font/ttf,font/otf,font/woff" class="hidden"/></div>
+        <div id="fontList" class="mt-4 space-y-2"></div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="relative z-10 py-3 px-4 text-center text-xs muted2" style="border-top:1px solid var(--line)">RuneWrite Studio · руны, поэмы и древние письма в браузере</footer>
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 text-sm px-5 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition z-50" style="background:linear-gradient(135deg,#f0d68a,#d4af37);color:#1a1408;font-weight:600"></div>
 
 <script>
 (function(){
 'use strict';
-/* ====== НАСТРОЙКИ (можно менять) ====== */
-var APP_URL='https://lina1209.github.io/rukopis-runic-workshop/'; // ссылка на полное приложение
-var SITE_NAME='Runeloom';
-
-var NOTO=[
+var NOTO_FONTS=[
  {gf:'Noto Sans Runic',dir:'notosansrunic',file:'NotoSansRunic-Regular.ttf'},
  {gf:'Noto Sans Ogham',dir:'notosansogham',file:'NotoSansOgham-Regular.ttf'},
  {gf:'Noto Sans Gothic',dir:'notosansgothic',file:'NotoSansGothic-Regular.ttf'},
  {gf:'Noto Sans Old Italic',dir:'notosansolditalic',file:'NotoSansOldItalic-Regular.ttf'},
  {gf:'Noto Sans Phoenician',dir:'notosansphoenician',file:'NotoSansPhoenician-Regular.ttf'},
- {gf:'Noto Sans Glagolitic',dir:'notosansglagolitic',file:'NotoSansGlagolitic-Regular.ttf'}
+ {gf:'Noto Sans Old Turkic',dir:'notosansoldturkic',file:'NotoSansOldTurkic-Regular.ttf'},
+ {gf:'Noto Sans Old Hungarian',dir:'notosansoldhungarian',file:'NotoSansOldHungarian-Regular.ttf'},
+ {gf:'Noto Sans Glagolitic',dir:'notosansglagolitic',file:'NotoSansGlagolitic-Regular.ttf'},
+ {gf:'Noto Sans Symbols 2',dir:'notosanssymbols2',file:'NotoSansSymbols2-Regular.ttf'},
+ {gf:'Noto Sans Egyptian Hieroglyphs',dir:'notosansegyptianhieroglyphs',file:'NotoSansEgyptianHieroglyphs-Regular.ttf'}
 ];
+var REPO_FONTS=[
+ {id:'repo:witch',name:'Руны Ведьм',file:'Руны Ведьм.otf',desc:'Магический алфавит Lina Winter. Если знаки не видны — переключите фон на тёмный.'},
+ {id:'repo:witch2',name:'Руны Ведьм (вариант 2)',file:'РУНЫ.otf',desc:'Вторая версия. Переключите фон при необходимости.'},
+ {id:'repo:ice',name:'Исландские руны',file:'Islandskie_Runnye_Ryady-Regular.woff',desc:'Исландские гальдраставы. Переключите фон при необходимости.'},
+ {id:'repo:ice2',name:'Исландские руны (вариант 2)',file:'руныИсландскийряд-Regular.woff',desc:'Вторая версия. Переключите фон при необходимости.'},
+ {id:'repo:hand',name:'Почерк (HandWriting)',file:'HandWriting.woff',desc:'Рукописный шрифт.'}
+];
+var FANTASY=[
+ {id:'fan:cirth',name:'Кирт Толкина (Cirth)',font:'RW Cirth',desc:'Руны Кирт Толкина (Cirth Erebor, Дэн Смит). Печатайте латинские буквы A–Z.',
+  urls:['https://cdn.jsdelivr.net/gh/andreatoffanello/cirith-erebor-transcriber@main/fonts/Erebor.ttf','https://raw.githubusercontent.com/andreatoffanello/cirith-erebor-transcriber/main/fonts/Erebor.ttf'],dl:'https://www.dafont.com/cirth-erebor.font'},
+ {id:'fan:aurebesh',name:'Aurebesh (Звёздные войны)',font:'RW Aurebesh',desc:'Галактический алфавит Aurebesh. Печатайте латинские буквы A–Z.',
+  urls:['https://cdn.jsdelivr.net/gh/LogicismDev/aurebesh-discord-font@main/fonts/AurebeshAF-Canon.woff2','https://cdn.jsdelivr.net/gh/southaki/contentDeliveryNetwork@main/font-family/Aurebesh.ttf'],dl:'https://aurekfonts.github.io/'},
+ {id:'fan:theban',name:'Theban (алфавит ведьм)',font:'RW Theban',needsUpload:true,desc:'Алфавит ведьм Theban. Загрузите шрифт один раз (кнопка ниже).',dl:'https://www.1001fonts.com/theban-alphabet-font.html'}
+];
+function notoUrls(f){return['https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/'+f.dir+'/'+f.file,'https://raw.githubusercontent.com/google/fonts/main/ofl/'+f.dir+'/'+f.file];}
+function repoUrls(file){return['https://cdn.jsdelivr.net/gh/Lina1209/rune-fonts@main/'+encodeURIComponent(file),'https://raw.githubusercontent.com/Lina1209/rune-fonts/main/'+encodeURIComponent(file)];}
+var loadedFamilies={};
+async function tryLoadFont(family,urls){for(var i=0;i<urls.length;i++){try{var f=new FontFace(family,'url("'+urls[i]+'")');await f.load();document.fonts.add(f);loadedFamilies[family]=true;return true;}catch(e){}}return false;}
+
+var ELDER_META={
+ 'ᚠ':{name:'Феху',sound:'f',lat:'f',cyr:'ф',meaning:'Богатство, изобилие, начало'},'ᚢ':{name:'Уруз',sound:'u',lat:'u',cyr:'у',meaning:'Сила, здоровье, выносливость'},
+ 'ᚦ':{name:'Турисаз',sound:'th',lat:'',cyr:'т',meaning:'Защита, врата, шип'},'ᚨ':{name:'Ансуз',sound:'a',lat:'a',cyr:'а',meaning:'Мудрость, слово, бог'},
+ 'ᚱ':{name:'Райдо',sound:'r',lat:'r',cyr:'р',meaning:'Путь, движение, поездка'},'ᚲ':{name:'Кауна',sound:'k',lat:'k',cyr:'к',meaning:'Огонь, знание, факел'},
+ 'ᚷ':{name:'Гебо',sound:'g',lat:'g',cyr:'г',meaning:'Дар, союз, партнёрство'},'ᚹ':{name:'Вуньо',sound:'w',lat:'w',cyr:'в',meaning:'Радость, гармония, успех'},
+ 'ᚺ':{name:'Хагалаз',sound:'h',lat:'h',cyr:'х',meaning:'Перемены, град, разрушение'},'ᚾ':{name:'Наутиз',sound:'n',lat:'n',cyr:'н',meaning:'Нужда, терпение, необходимость'},
+ 'ᛁ':{name:'Иса',sound:'i',lat:'i',cyr:'и',meaning:'Лёд, покой, пауза'},'ᛃ':{name:'Йера',sound:'j',lat:'j',cyr:'й',meaning:'Урожай, цикл, награда'},
+ 'ᛇ':{name:'Эйваз',sound:'ei',lat:'',cyr:'э',meaning:'Ось, стойкость, защита'},'ᛈ':{name:'Пертро',sound:'p',lat:'p',cyr:'п',meaning:'Тайна, судьба, игра'},
+ 'ᛉ':{name:'Альгиз',sound:'z',lat:'z',cyr:'з',meaning:'Защита, покровительство, лось'},'ᛋ':{name:'Соулу',sound:'s',lat:'s',cyr:'с',meaning:'Солнце, успех, энергия'},
+ 'ᛏ':{name:'Тейваз',sound:'t',lat:'t',cyr:'т',meaning:'Победа, честь, воин'},'ᛒ':{name:'Беркана',sound:'b',lat:'b',cyr:'б',meaning:'Рост, начало, берёза'},
+ 'ᛖ':{name:'Эваз',sound:'e',lat:'e',cyr:'е',meaning:'Движение, доверие, конь'},'ᛗ':{name:'Манназ',sound:'m',lat:'m',cyr:'м',meaning:'Человек, Я, общество'},
+ 'ᛚ':{name:'Лагуз',sound:'l',lat:'l',cyr:'л',meaning:'Вода, интуиция, поток'},'ᛜ':{name:'Ингуз',sound:'ng',lat:'',cyr:'',meaning:'Плодородие, потенциал, зерно'},
+ 'ᛞ':{name:'Дагаз',sound:'d',lat:'d',cyr:'д',meaning:'Рассвет, прорыв, день'},'ᛟ':{name:'Отала',sound:'o',lat:'o',cyr:'о',meaning:'Наследие, дом, род'}
+};
 function L(s){var m={};s.split(' ').forEach(function(p){var i=p.indexOf(':');if(i>0)m[p.slice(0,i)]=p.slice(i+1);});return m;}
-var AL={
- elder:{name:'Старший Футарк',font:'Noto Sans Runic',
+var ALPHABETS=[
+ {id:'elder',name:'Старший Футарк',group:'Руны',font:'Noto Sans Runic',desc:'24 руны древнегерманского письма. Перевод по звуку.',meta:ELDER_META,
   lat:L('a:ᚨ b:ᛒ c:ᚲ d:ᛞ e:ᛖ f:ᚠ g:ᚷ h:ᚺ i:ᛁ j:ᛃ k:ᚲ l:ᛚ m:ᛗ n:ᚾ o:ᛟ p:ᛈ q:ᚲ r:ᚱ s:ᛋ t:ᛏ u:ᚢ v:ᚹ w:ᚹ y:ᛃ z:ᛉ'),
-  cyr:L('а:ᚨ б:ᛒ в:ᚹ г:ᚷ д:ᛞ е:ᛖ з:ᛉ и:ᛁ й:ᛃ к:ᚲ л:ᛚ м:ᛗ н:ᚾ о:ᛟ п:ᛈ р:ᚱ с:ᛋ т:ᛏ у:ᚢ ф:ᚠ х:ᚺ ц:ᛉ ч:ᛃ ш:ᛊ щ:ᛊ ы:ᛁ ь:ᛁ э:ᛖ ё:ᛃ ж:ᛃ ю:ᛃᚢ я:ᛃᚨ')},
- younger:{name:'Младший Футарк',font:'Noto Sans Runic',
+  cyr:L('а:ᚨ б:ᛒ в:ᚹ г:ᚷ д:ᛞ е:ᛖ з:ᛉ и:ᛁ й:ᛃ к:ᚲ л:ᛚ м:ᛗ н:ᚾ о:ᛟ п:ᛈ р:ᚱ с:ᛋ т:ᛏ у:ᚢ ф:ᚠ х:ᚺ ц:ᛉ ч:ᛃ ш:ᛊ щ:ᛊ ы:ᛁ ь:ᛁ э:ᛖ ё:ᛃ ж:ᛃ ю:ᛃᚢ я:ᛃᚨ'),
+  phon:[['th','ᚦ'],['sh','ᛊ'],['ch','ᚲ'],['ng','ᛜ'],['ph','ᚠ'],['wh','ᚹ'],['ee','ᛁ'],['oo','ᚢ'],['qu','ᚲᚹ'],['ea','ᛖ'],['ou','ᚢ'],['ai','ᛖ'],['ay','ᛖ'],['ie','ᛁ'],['ei','ᛇ'],['x','ᚲᛋ']],revX:{'ᚦ':'th','ᛜ':'ng','ᛇ':'ei','ᛊ':'sh'}},
+ {id:'younger-long',name:'Младший Футарк (датский)',group:'Руны',font:'Noto Sans Runic',desc:'16 рун эпохи викингов, длинные ветви.',
   lat:L('a:ᛅ b:ᛒ c:ᚴ d:ᛏ e:ᛅ f:ᚠ g:ᚴ h:ᚼ i:ᛁ j:ᛁ k:ᚴ l:ᛚ m:ᛘ n:ᚾ o:ᚬ p:ᛒ q:ᚴ r:ᚱ s:ᛋ t:ᛏ u:ᚢ v:ᚠ w:ᚢ y:ᛁ z:ᛋ'),
-  cyr:L('а:ᛅ б:ᛒ в:ᚠ г:ᚴ д:ᛏ е:ᛅ ё:ᛁ ж:ᛋ з:ᛋ и:ᛁ й:ᛁ к:ᚴ л:ᛚ м:ᛘ н:ᚾ о:ᚬ п:ᛒ р:ᚱ с:ᛋ т:ᛏ у:ᚢ ф:ᚠ х:ᚼ ц:ᛋ ч:ᛋ ш:ᛋ щ:ᛋ ы:ᛁ ь:ᛁ э:ᛅ ю:ᛁᚢ я:ᛁᛅ')},
- ogham:{name:'Огам',font:'Noto Sans Ogham',
+  cyr:L('а:ᛅ б:ᛒ в:ᚠ г:ᚴ д:ᛏ е:ᛅ ё:ᛁ ж:ᛋ з:ᛋ и:ᛁ й:ᛁ к:ᚴ л:ᛚ м:ᛘ н:ᚾ о:ᚬ п:ᛒ р:ᚱ с:ᛋ т:ᛏ у:ᚢ ф:ᚠ х:ᚼ ц:ᛋ ч:ᛋ ш:ᛋ щ:ᛋ ы:ᛁ ь:ᛁ э:ᛅ ю:ᛁᚢ я:ᛁᛅ'),phon:[['th','ᚦ'],['x','ᚴᛋ']],revX:{'ᚦ':'th'}},
+ {id:'younger-short',name:'Младший Футарк (шведско-норв.)',group:'Руны',font:'Noto Sans Runic',desc:'16 рун, короткие ветви (Рёк).',
+  lat:L('a:ᛆ b:ᛒ c:ᚴ d:ᛐ e:ᛆ f:ᚠ g:ᚴ h:ᚽ i:ᛁ j:ᛁ k:ᚴ l:ᛚ m:ᛙ n:ᚿ o:ᚭ p:ᛒ q:ᚴ r:ᚱ s:ᛌ t:ᛐ u:ᚢ v:ᚠ w:ᚢ y:ᛁ z:ᛌ'),
+  cyr:L('а:ᛆ б:ᛒ в:ᚠ г:ᚴ д:ᛐ е:ᛆ ё:ᛁ ж:ᛌ з:ᛌ и:ᛁ й:ᛁ к:ᚴ л:ᛚ м:ᛙ н:ᚿ о:ᚭ п:ᛒ р:ᚱ с:ᛌ т:ᛐ у:ᚢ ф:ᚠ х:ᚽ ц:ᛌ ч:ᛌ ш:ᛌ щ:ᛌ ы:ᛁ ь:ᛁ э:ᛆ ю:ᛁᚢ я:ᛁᛆ'),phon:[['th','ᚦ'],['x','ᚴᛌ']],revX:{'ᚦ':'th'}},
+ {id:'anglo',name:'Англосаксонский Футорк',group:'Руны',font:'Noto Sans Runic',desc:'Расширенный ряд, Англия и Фризия.',
+  lat:L('a:ᚪ b:ᛒ c:ᛳ d:ᛞ e:ᛖ f:ᚠ g:ᚷ h:ᚻ i:ᛁ j:ᛄ k:ᛳ l:ᛚ m:ᛗ n:ᚾ o:ᚩ p:ᛈ q:ᛳ r:ᚱ s:ᛋ t:ᛏ u:ᚢ v:ᚹ w:ᚹ y:ᛄ z:ᛋ'),
+  cyr:L('а:ᚪ б:ᛒ в:ᚹ г:ᚷ д:ᛞ е:ᛖ ё:ᛄ ж:ᛲ з:ᛋ и:ᛁ й:ᛄ к:ᛳ л:ᛚ м:ᛗ н:ᚾ о:ᚩ п:ᛈ р:ᚱ с:ᛋ т:ᛏ у:ᚢ ф:ᚠ х:ᚻ ц:ᛋ ч:ᛳ ш:ᛲ щ:ᛲ ы:ᛁ ь:ᛁ э:ᛖ ю:ᛄᚢ я:ᛄᚪ'),
+  phon:[['th','ᚦ'],['sh','ᛲ'],['ng','ᛝ'],['ch','ᛳ'],['ea','ᛠ'],['io','ᛡ'],['oo','ᛳ'],['x','ᛉ']],revX:{'ᚦ':'th','ᛲ':'sh','ᛝ':'ng','ᛠ':'ea','ᛡ':'io','ᛳ':'oo'}},
+ {id:'medieval',name:'Средневековые руны',group:'Руны',font:'Noto Sans Runic',desc:'Средневековый ряд с точечными рунами.',
+  lat:L('a:ᛆ b:ᛒ c:ᚴ d:ᛑ e:ᛂ f:ᚠ g:ᚵ h:ᚼ i:ᛁ j:ᛁ k:ᚴ l:ᛚ m:ᛘ n:ᚾ o:ᚬ p:ᛔ q:ᚴ r:ᚱ s:ᛋ t:ᛐ u:ᚢ v:ᚠ w:ᚢ y:ᛦ z:ᛌ'),
+  cyr:L('а:ᛆ б:ᛒ в:ᚠ г:ᚵ д:ᛑ е:ᛂ ё:ᛁ ж:ᛋ з:ᛋ и:ᛁ й:ᛁ к:ᚴ л:ᛚ м:ᛘ н:ᚾ о:ᚬ п:ᛔ р:ᚱ с:ᛋ т:ᛐ у:ᚢ ф:ᚠ х:ᚼ ц:ᛋ ч:ᛋ ш:ᛋ щ:ᛋ ы:ᛁ ь:ᛁ э:ᛂ ю:ᛁᚢ я:ᛁᛆ'),phon:[['th','ᚦ'],['x','ᚴᛋ']],revX:{'ᚦ':'th'}},
+ {id:'armanen',name:'Арманен (18 рун)',group:'Руны',font:'Noto Sans Runic',desc:'Система 18 рун Гвидо фон Листа.',
+  lat:L('a:ᚨ b:ᛒ c:ᚲ d:ᛞ e:ᛖ f:ᚠ g:ᚷ h:ᚺ i:ᛁ j:ᛁ k:ᚲ l:ᛚ m:ᛗ n:ᚾ o:ᛟ p:ᛈ q:ᚲ r:ᚱ s:ᛋ t:ᛏ u:ᚢ v:ᚹ w:ᚹ y:ᛦ z:ᛉ'),
+  cyr:L('а:ᚨ б:ᛒ в:ᚹ г:ᚷ д:ᛞ е:ᛖ ё:ᛁ ж:ᛋ з:ᛉ и:ᛁ й:ᛁ к:ᚲ л:ᛚ м:ᛗ н:ᚾ о:ᛟ п:ᛈ р:ᚱ с:ᛋ т:ᛏ у:ᚢ ф:ᚠ х:ᚺ ц:ᛉ ч:ᛋ ш:ᛋ щ:ᛋ ы:ᛁ ь:ᛁ э:ᛖ ю:ᛁᚢ я:ᛁᚨ'),phon:[['th','ᚦ'],['x','ᚲᛋ']],revX:{'ᚦ':'th'}},
+ {id:'ogham',name:'Огам (кельтский)',group:'Кельтские',font:'Noto Sans Ogham',desc:'Древнеирландское письмо, засечки на линии.',
   lat:L('a:ᚓ b:ᚁ c:ᚉ d:ᚇ e:ᚔ f:ᚃ g:ᚍ h:ᚆ i:ᚕ j:ᚔ k:ᚉ l:ᚂ m:ᚋ n:ᚅ o:ᚑ p:ᚚ q:ᚊ r:ᚐ s:ᚄ t:ᚈ u:ᚒ v:ᚃ w:ᚃ y:ᚔ z:ᚏ'),
-  cyr:L('а:ᚓ б:ᚁ в:ᚃ г:ᚍ д:ᚇ е:ᚔ ё:ᚕ ж:ᚏ з:ᚏ и:ᚕ й:ᚕ к:ᚉ л:ᚂ м:ᚋ н:ᚅ о:ᚑ п:ᚚ р:ᚐ с:ᚄ т:ᚈ у:ᚒ ф:ᚃ х:ᚆ ц:ᚉ ч:ᚉ ш:ᚄ щ:ᚄ ы:ᚕ ь:ᚕ э:ᚔ ю:ᚕᚒ я:ᚕᚓ')},
- glagolitic:{name:'Глаголица',font:'Noto Sans Glagolitic',
+  cyr:L('а:ᚓ б:ᚁ в:ᚃ г:ᚍ д:ᚇ е:ᚔ ё:ᚕ ж:ᚏ з:ᚏ и:ᚕ й:ᚕ к:ᚉ л:ᚂ м:ᚋ н:ᚅ о:ᚑ п:ᚚ р:ᚐ с:ᚄ т:ᚈ у:ᚒ ф:ᚃ х:ᚆ ц:ᚉ ч:ᚉ ш:ᚄ щ:ᚄ ы:ᚕ ь:ᚕ э:ᚔ ю:ᚕᚒ я:ᚕᚓ'),phon:[['x','ᚉᚄ']]},
+ {id:'gothic',name:'Готский',group:'Древние письма',font:'Noto Sans Gothic',desc:'Письмо готов, IV век.',
+  lat:L('a:𐌰 b:𐌱 c:𐌺 d:𐌳 e:𐌴 f:𐍆 g:𐌲 h:𐌷 i:𐌹 j:𐌾 k:𐌺 l:𐌻 m:𐌼 n:𐌽 o:𐍉 p:𐍀 q:𐌵 r:𐍂 s:𐍃 t:𐍄 u:𐌿 v:𐍅 w:𐍅 x:𐍇 y:𐌾 z:𐌶'),
+  cyr:L('а:𐌰 б:𐌱 в:𐍅 г:𐌲 д:𐌳 е:𐌴 ё:𐌾 ж:𐌾 з:𐌶 и:𐌹 й:𐌾 к:𐌺 л:𐌻 м:𐌼 н:𐌽 о:𐍉 п:𐍀 р:𐍂 с:𐍃 т:𐍄 у:𐌿 ф:𐍆 х:𐌷 ц:𐍄𐍃 ч:𐌺 ш:𐍃 щ:𐍃 ы:𐌹 ь:𐌹 э:𐌴 ю:𐌾𐌿 я:𐌾𐌰')},
+ {id:'olditalic',name:'Древнеиталийский (этрусский)',group:'Древние письма',font:'Noto Sans Old Italic',desc:'Письмо этрусков.',
+  lat:L('a:𐌀 b:𐌁 c:𐌂 d:𐌃 e:𐌄 f:𐌚 g:𐌂 h:𐌇 i:𐌉 j:𐌉 k:𐌊 l:𐌋 m:𐌌 n:𐌍 o:𐌏 p:𐌐 q:𐌒 r:𐌓 s:𐌔 t:𐌕 u:𐌖 v:𐌅 w:𐌅 x:𐌗 y:𐌖 z:𐌆'),
+  cyr:L('а:𐌀 б:𐌁 в:𐌅 г:𐌂 д:𐌃 е:𐌄 ё:𐌉 ж:𐌆 з:𐌆 и:𐌉 й:𐌉 к:𐌊 л:𐌋 м:𐌌 н:𐌍 о:𐌏 п:𐌐 р:𐌓 с:𐌔 т:𐌕 у:𐌖 ф:𐌚 х:𐌇 ц:𐌜 ч:𐌜 ш:𐌔 щ:𐌔 ы:𐌉 ь:𐌉 э:𐌄 ю:𐌉𐌖 я:𐌉𐌀')},
+ {id:'phoenician',name:'Финикийский',group:'Древние письма',font:'Noto Sans Phoenician',desc:'Предок греческого и латинского письма.',
+  lat:L('a:𐤀 b:𐤁 c:𐤊 d:𐤃 e:𐤄 f:𐤐 g:𐤂 h:𐤄 i:𐤉 j:𐤉 k:𐤊 l:𐤋 m:𐤌 n:𐤍 o:𐤏 p:𐤐 q:𐤒 r:𐤓 s:𐤎 t:𐤕 u:𐤅 v: w:𐤅 x:𐤊𐤎 y:𐤉 z:𐤆'),
+  cyr:L('а:𐤀 б:𐤁 в:𐤅 г:𐤂 д:𐤃 е:𐤄 ё:𐤉 ж:𐤆 з:𐤆 и:𐤉 й:𐤉 к:𐤊 л:𐤋 м:𐤌 н:𐤍 о:𐤏 п:𐤐 р:𐤓 с:𐤎 т:𐤕 у:𐤅 ф:𐤐 х:𐤇 ц:𐤑 ч:𐤒 ш:𐤔 щ:𐤔 ы:𐤉 ь:𐤉 э:𐤄 ю:𐤉𐤅 я:𐤉𐤀')},
+ {id:'orkhon',name:'Орхон-Енисейский',group:'Древние письма',font:'Noto Sans Old Turkic',desc:'Древнетюркское письмо, VIII век.',
+  lat:L('a:𐰀 b:𐰉 c:𐰲 d:𐰓 e:𐰀 f:𐰯 g:𐰍 h:𐰴 i:𐰃 j:𐰖 k:𐰚 l:𐰞 m:𐰢 n:𐰣 o:𐰆 p:𐰯 q:𐰴 r:𐰺 s:𐰽 t:𐱅 u:𐰆 v:𐰉 w:𐰆 x:𐰴 y:𐰖 z:𐰔'),
+  cyr:L('а:𐰀 б:𐰉 в:𐰉 г:𐰍 д:𐰓 е:𐰀 ё:𐰖 ж:𐰖 з:𐰔 и:𐰃 й:𐰖 к:𐰚 л:𐰞 м:𐰢 н:𐰣 о:𐰆 п:𐰯 р:𐰺 с:𐰽 т:𐱅 у:𐰆 ф:𐰯 х:𐰴 ц:𐰲 ч:𐰲 ш:𐱁 щ:𐱁 ы:𐰃 ь:𐰃 э:𐰀 ю:𐰖𐰆 я:𐰖𐰀')},
+ {id:'rovash',name:'Древневенгерский (роваш)',group:'Древние письма',font:'Noto Sans Old Hungarian',desc:'Венгерское письмо rovásírás. Полный шрифт — все знаки.',
+  lat:L('a:𐲀 b:𐲂 c:𐲄 d:𐲇 e:𐲉 f:𐲌 g:𐲍 h:𐲏 i:𐲐 j:𐲒 k:𐲓 l:𐲖 m:𐲘 n:𐲙 o:𐲛 p:𐲠 q:𐲓 r:𐲢 s:𐲤 t:𐲦 u:𐲪 v: w:𐲪 x:𐲓𐲥 y:𐲒 z:𐲯'),
+  cyr:L('а:𐲀 б:𐲂 в:𐲮 г:𐲍 д:𐲇 е:𐲉 ё:𐲒 ж:𐲒 з:𐲯 и:𐲐 й:𐲒 к:𐲓 л:𐲖 м:𐲘 н:𐲙 о:𐲛 п:𐲠 р:𐲢 с:𐲤 т:𐲦 у:𐲪 ф:𐲌 х:𐲏 ц:𐲄 ч:𐲆 ш:𐲤 щ:𐲤 ы:𐲐 ь:𐲐 э:𐲉 ю:𐲒𐲪 я:𐲒𐲀')},
+ {id:'glagolitic',name:'Глаголица',group:'Древние письма',font:'Noto Sans Glagolitic',desc:'Старославянская азбука. Отлично для русского текста.',
   lat:L('a:Ⰰ b:Ⰱ c:Ⱌ d:Ⰴ e:Ⰵ f:Ⱇ g:Ⰳ h:Ⱈ i:Ⰹ j:Ⰺ k:Ⰽ l:Ⰾ m:Ⰿ n:Ⱀ o:Ⱁ p:Ⱂ q:Ⰽ r:Ⱃ s:Ⱄ t:Ⱅ u:Ⱆ v:Ⰲ w:Ⰲ x:Ⱈ y:Ⰹ z:Ⰸ'),
   cyr:L('а:Ⰰ б:Ⰱ в:Ⰲ г:Ⰳ д:Ⰴ е:Ⰵ ё:Ⱖ ж:Ⰶ з:Ⰸ и:Ⰹ й:Ⰺ к:Ⰽ л:Ⰾ м:Ⰿ н:Ⱀ о:Ⱁ п:Ⱂ р:Ⱃ с:Ⱄ т:Ⱅ у:Ⱆ ф:Ⱇ х:Ⱈ ц:Ⱌ ч:Ⱍ ш:Ⱎ щ:Ⱋ ъ:Ⱏ ы:Ⱐ ь:Ⱑ э:Ⰵ ю:Ⱓ я:Ⱗ')}
+];
+var RUNIC_CALENDAR=[[[6,29],'ᚠ'],[[7,14],'ᚢ'],[[7,29],'ᚦ'],[[8,13],'ᚨ'],[[8,29],'ᚱ'],[[9,13],'ᚲ'],[[9,28],'ᚷ'],[[10,13],'ᚹ'],[[10,28],'ᚺ'],[[11,13],'ᚾ'],[[11,28],'ᛁ'],[[12,13],'ᛃ'],[[12,28],'ᛇ'],[[1,13],'ᛈ'],[[1,28],'ᛉ'],[[2,12],'ᛋ'],[[2,27],'ᛏ'],[[3,14],'ᛒ'],[[3,30],'ᛖ'],[[4,14],'ᛗ'],[[4,29],'ᛚ'],[[5,14],'ᛜ'],[[5,29],'ᛞ'],[[6,14],'ᛟ']];
+var SYMBOLS={
+ 'Руны (доп. знаки)':['᛫','᛬','᛭','ᛮ','ᛯ','ᛰ','ᛱ','ᛲ','ᛳ','ᛦ','ᛧ','ᛨ','ᛩ','ᛪ','ᛠ','ᛡ','ᛢ','ᛣ','ᛤ','ᛥ'],
+ 'Мистические':['⛧','⛥','⛤','⛦','⛨','✠','✡','☦','☧','☨','☩','⸸','⚚','☥','⚕','☤','⚛','⚜','⚝','✴','✵','✶','✷','✸','✹','❂','⟁','⟡','⌖','⍟','⎈','࿈','࿋','࿊','۞','☬','☫','𖤐','🜏','ⵣ','ϟ'],
+ 'Луна и Солнце':['☽','☾','◯','◐','◑','◒','◓','●','○','☀','☉','☼','🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘','🌙','⭐','✨','🌟'],
+ 'Алхимия':['🜁','🜂','🜃','🜄','🜚','🜛','🜔','🜍','🜋','🜌','🜎','🜐','🜑','🜒','🜓','🜕','🜖','🜗','🜘','🜙','🜜','🜝','🜞','🜟','🜠','🜡','🜢','🜣','🜤','🜥','🜦','🜧','🜨','🜩','🜪','🜫','🜬','🜭','🜮','🜯','🜰','🜱','🜲','🜳','🜴','🜵','🜶','🜷','🜸','🜹'],
+ 'Египетские':['𓂀','𓋹','𓆗','𓃶','𓅓','𓆣','𓁹','𓊝','𓆩','𓆪','𓃠','𓅱','𓆙','𓇳','𓈖','𓉔','𓊃','𓏏'],
+ 'Природа и сила':['⚡','🌀','☯','🧿','🪬','🔮','🕯','🗡','⚔','🛡','🏹','⚰','🦌','🐺','🦅','🌲','🍄','💀','☠','🕷','🦂','🐍','🌿','🔥','💎','⚒','🪓','🪶']
 };
-var SHOWCASE=[
- {name:'Старший Футарк',note:'Древнегерманские руны, 24 знака',font:'Noto Sans Runic',word:'runa',src:'elder'},
- {name:'Младший Футарк',note:'Эпоха викингов, 16 рун',font:'Noto Sans Runic',word:'runa',src:'younger'},
- {name:'Огам',note:'Кельтское письмо, засечки',font:'Noto Sans Ogham',word:'runa',src:'ogham'},
- {name:'Готский',note:'Письмо готов, IV век',font:'Noto Sans Gothic',word:'runa',map:L('a:𐌰 b:𐌱 c:𐌺 d:𐌳 e:𐌴 f:𐍆 g:𐌲 h:𐌷 i:𐌹 j:𐌾 k:𐌺 l:𐌻 m:𐌼 n:𐌽 o:𐍉 p:𐍀 r:𐍂 s:𐍃 t:𐍄 u:𐌿 v:𐍅 w:𐍅 z:𐌶')},
- {name:'Древнеиталийский',note:'Этрусское письмо',font:'Noto Sans Old Italic',word:'runa',map:L('a:𐌀 b:𐌁 c:𐌂 d:𐌃 e:𐌄 f:𐌚 g:𐌂 h:𐌇 i:𐌉 k:𐌊 l:𐌋 m:𐌌 n:𐌍 o:𐌏 p:𐌐 r:𐌓 s:𐌔 t:𐌕 u:𐌖 v:𐌅 w:𐌅 z:𐌆')},
- {name:'Глаголица',note:'Старославянская азбука',font:'Noto Sans Glagolitic',word:'руна',src:'glagolitic'}
-];
-function fwd(text,a){var s=text.toLowerCase(),out='';for(var i=0;i<s.length;i++){var c=s[i];out+=(a.cyr&&a.cyr[c]!==undefined)?a.cyr[c]:((a.lat&&a.lat[c]!==undefined)?a.lat[c]:c);}return out;}
+var SYM_FONT='"Noto Sans Symbols 2","Noto Sans Egyptian Hieroglyphs","Noto Sans Runic","Segoe UI Symbol","Segoe UI Emoji",sans-serif';
+var POEMS={
+ anglo:{intro:'Англосаксонская руническая поэма (древнеанглийская, ок. X в.) — перевод на русский.',font:'Noto Sans Runic',verses:[
+  ['ᚠ','Феху','Богатство — утешение каждому; но всякий должен щедро делиться им, если хочет обрести славу перед Господом.'],
+  ['ᚢ','Уруз','Зубр горд и велик рогами, свирепый зверь, бодается рогами, странник болот — отважное создание.'],
+  ['ᚦ','Турисаз','Шип остёр и зол, жестоко ранит всякого, кто схватит его.'],
+  ['ᚨ','Ансуз','Уста — источник слова, мудрость и опора, совет и радость воинов.'],
+  ['ᚱ','Райдо','Езда легка сидящему, но трудна коню; путь далёк для всадника.'],
+  ['ᚲ','Кауна','Факел ярко горит, светлый и чистый, там где воины сидят в зале.'],
+  ['ᚷ','Гебо','Дар — честь и хвала дарителю; щедрость приносит славу.'],
+  ['ᚹ','Вуньо','Радость познаёт тот, кто лишён горя, кому хватает богатства и благодати.'],
+  ['ᚺ','Хагалаз','Град — холоднейшее зерно, падает с неба, кружим ветром, тает в воду.'],
+  ['ᚾ','Наутиз','Нужда тяжела сердцу, но даёт помощь и спасение тому, кто внимает ей вовремя.'],
+  ['ᛁ','Иса','Лёд холоден и скользок, стеклоподобен, прекрасен; мост из воды для слепого.'],
+  ['ᛃ','Йера','Год — награда людям, когда земля даёт щедрый урожай.'],
+  ['ᛇ','Эйваз','Тис — дерево с грубой корой, крепкое, держит землю; огонь внутри — радость.'],
+  ['ᛈ','Пертро','Игра — смех и веселье воинов в зале, где отважные пируют вместе.'],
+  ['ᛉ','Альгиз','Осока растёт в воде, ранит того, кто тронет её; защита для воина.'],
+  ['ᛋ','Соулу','Солнце — радость мореходов, надежда, когда они плывут по волнам к берегу.'],
+  ['ᛏ','Тейваз','Звезда — путеводный знак, держит путь ночью, не обманет воина.'],
+  ['ᛒ','Беркана','Берёза без плодов, но даёт побеги, зеленеет листвой, прекрасна.'],
+  ['ᛖ','Эваз','Конь — радость воинов, гордый и быстрый; доверие между всадником и конём.'],
+  ['ᛗ','Манназ','Человек — радость другому человеку; все мы родня, Господь судит всех.'],
+  ['ᛚ','Лагуз','Вода — бездна для того, кто не умеет плавать; корабль несёт по волнам.'],
+  ['ᛜ','Ингуз','Инг первым был у датчан, уехал на восток по волнам; народ хранит его имя.'],
+  ['ᛞ','Дагаз','День — славный свет Господа, надежда и радость всем.'],
+  ['ᛟ','Отала','Родина — мила каждому, дом и земля, где человек живёт в достатке.']
+ ]},
+ icelandic:{intro:'Исландская руническая поэма (Младший Футарк, 16 рун) — краткий перевод на русский.',font:'Noto Sans Runic',verses:[
+  ['ᚠ','Фе','Деньги — раздор родни и огонь волн.'],['ᚢ','Ур','Морось — плач облаков и гибель сенокоса.'],
+  ['ᚦ','Турс','Великан — мучение женщин, житель скал.'],['ᚬ','Осс','Бог — древний Гаут, князь Асгарда.'],
+  ['ᚱ','Рейд','Езда — радость сидящего, труд коня.'],['ᚴ','Каун','Язва — горе детей, дом гниющей плоти.'],
+  ['ᚼ','Хагаль','Град — холодное зерно, болезнь змей.'],['ᚾ','Науд','Нужда — горе служанки, тяжкий труд.'],
+  ['ᛁ','Исс','Лёд — кора реки, крыша волн.'],['ᛅ','Ар','Урожай — благо людей, доброе лето.'],
+  ['ᛋ','Соль','Солнце — щит облаков, сияющий луч.'],['ᛏ','Тюр','Тюр — однорукий бог, князь храмов.'],
+  ['ᛒ','Бьяркан','Берёза — зелёная листва, юное дерево.'],['ᛘ','Мадур','Человек — радость человека, украшение кораблей.'],
+  ['ᛚ','Лёгур','Вода — кипящий котёл, широкая гладь.'],['ᛦ','Ир','Тис — согнутый лук, хрупкое железо.']
+ ]}
+};
+
+var state={alphabetId:'elder',dir:'fwd',phonetic:true,revCyr:false,size:40,outBg:'light',customFonts:[],lastOutput:'',kb:''};
+var mapCache={},history=[];try{history=JSON.parse(localStorage.getItem('rw_history')||'[]');}catch(e){}
 function $(id){return document.getElementById(id);}
-function toast(m){var t=$('toast');t.textContent=m;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},1700);}
+function allAlphabets(){
+  var fan=FANTASY.map(function(f){return{id:f.id,name:f.name,group:'Фэнтези и магия',font:f.font,custom:true,desc:f.desc,needsUpload:f.needsUpload};});
+  var repo=REPO_FONTS.map(function(f){return{id:f.id,name:f.name,group:'Руны Lina Winter',font:f.name,custom:true,desc:f.desc,repoFile:f.file};});
+  var cust=state.customFonts.map(function(f){return{id:'custom:'+f.id,name:f.name,group:'Мои шрифты',font:f.family,custom:true,desc:'Свой шрифт.'};});
+  return ALPHABETS.concat(fan,repo,cust);
+}
+function currentAlphabet(){return allAlphabets().find(function(a){return a.id===state.alphabetId;})||ALPHABETS[0];}
+function buildMaps(a){if(mapCache[a.id])return mapCache[a.id];var lat={},cyr={},rev={},revC={},k;for(k in a.lat)lat[k]=a.lat[k];for(k in a.cyr)cyr[k]=a.cyr[k];for(k in lat)if(!rev[lat[k]])rev[lat[k]]=k;for(k in cyr)if(!revC[cyr[k]])revC[cyr[k]]=k;if(a.revX)for(k in a.revX)rev[k]=a.revX[k];var phon=(a.phon||[]).slice().sort(function(x,y){return y[0].length-x[0].length;});mapCache[a.id]={lat:lat,cyr:cyr,rev:rev,revC:revC,phon:phon};return mapCache[a.id];}
+function forward(text,a){var m=buildMaps(a),s=text.toLowerCase();if(state.phonetic&&m.phon.length)for(var i=0;i<m.phon.length;i++)s=s.split(m.phon[i][0]).join(m.phon[i][1]);var out='';for(var j=0;j<s.length;j++){var ch=s[j];out+=m.cyr[ch]!==undefined?m.cyr[ch]:(m.lat[ch]!==undefined?m.lat[ch]:ch);}return out;}
+function reverse(text,a){var m=buildMaps(a),out='';for(var j=0;j<text.length;j++){var ch=text[j];out+=(state.revCyr&&m.revC[ch]!==undefined)?m.revC[ch]:(m.rev[ch]!==undefined?m.rev[ch]:ch);}return out;}
+function fontStack(a){return a.custom?'"'+a.font+'", sans-serif':'"'+a.font+'", "Segoe UI Historic", "Segoe UI Symbol", sans-serif';}
+function applyBg(){var box=$('outputBox'),ot=$('outputText');if(state.outBg==='dark'){box.style.background='#0a0e1a';ot.style.color='#f0ead8';}else if(state.outBg==='transparent'){box.style.background='repeating-conic-gradient(#e2e8f0 0% 25%, #fff 0% 50%) 50%/16px 16px';ot.style.color='#1a1408';}else{box.style.background='#f4efe2';ot.style.color='#1a1408';}}
+function convert(){
+  var a=currentAlphabet(),text=$('inputText').value,out,font;
+  if(a.custom&&a.needsUpload&&!loadedFamilies[a.font]){out='⬆ Загрузите шрифт во вкладке «Шрифты»';font='inherit';}
+  else if(a.custom){out=text;font=fontStack(a);}
+  else if(state.dir==='fwd'){out=forward(text,a);font=fontStack(a);}
+  else{out=reverse(text,a);font='inherit';}
+  state.lastOutput=(a.custom&&a.needsUpload&&!loadedFamilies[a.font])?'':out;
+  var ot=$('outputText');ot.textContent=out||'ᚱᚢᚾᚨ';ot.style.fontFamily=font;ot.style.fontSize=(a.custom&&a.needsUpload&&!loadedFamilies[a.font])?'16px':state.size+'px';
+  $('charCount').textContent=state.lastOutput?(state.lastOutput.length+' зн.'):'';
+  $('alphabetDesc').textContent=a.desc||'';
+  $('phoneticWrap').style.display=(!a.custom&&state.dir==='fwd'&&a.phon)?'flex':'none';
+  $('revTargetWrap').style.display=(!a.custom&&state.dir==='rev')?'flex':'none';
+  $('inputLabel').textContent=state.dir==='rev'?'Вставьте руны / знаки':'Ваш текст (русский / английский)';
+  applyBg();
+}
+function showTab(t){document.querySelectorAll('.tabpane').forEach(function(p){p.classList.add('hidden');});$('tab-'+t).classList.remove('hidden');document.querySelectorAll('.tabbtn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t);});if(t==='alphabet')renderAlphabetTable();if(t==='symbols')renderSymbols();if(t==='fonts'){renderRepoFonts();renderFantasyFonts();}if(t==='poems')renderPoems();if(t==='keyboard')renderKeyboard();}
+document.querySelectorAll('.tabbtn').forEach(function(b){b.addEventListener('click',function(){showTab(b.dataset.tab);});});
+function fillAlphabetSelect(){var sel=$('alphabetSelect'),groups={};allAlphabets().forEach(function(a){(groups[a.group]=groups[a.group]||[]).push(a);});sel.innerHTML='';for(var g in groups){var og=document.createElement('optgroup');og.label=g;groups[g].forEach(function(a){var op=document.createElement('option');op.value=a.id;op.textContent=a.name;og.appendChild(op);});sel.appendChild(og);}sel.value=state.alphabetId;}
+$('alphabetSelect').addEventListener('change',function(){state.alphabetId=this.value;convert();renderAlphabetTable();renderKeyboard();});
+function tableRows(a){if(a.custom){var rows=[],chars='ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';for(var i=0;i<chars.length;i++)rows.push({rune:chars[i],lat:'',cyr:'',name:'',meaning:''});return rows;}if(a.meta)return Object.keys(a.meta).map(function(r){var m=a.meta[r];return{rune:r,lat:m.lat,cyr:m.cyr,name:m.name,meaning:m.meaning};});var seen={},rows=[];for(var l in a.lat){var r=a.lat[l];if(!seen[r]){seen[r]=1;rows.push({rune:r,lat:l,cyr:'',name:'',meaning:''});}}for(var c in a.cyr){var r2=a.cyr[c],row=rows.find(function(x){return x.rune===r2;});if(row&&!row.cyr)row.cyr=c;}return rows;}
+function renderAlphabetTable(){var a=currentAlphabet();$('alphaTitle').textContent=a.name;var box=$('alphaTable');box.innerHTML='';tableRows(a).forEach(function(row){var card=document.createElement('div');card.className='glyph-card card rounded-lg p-3 text-center';var big=document.createElement('div');big.textContent=row.rune;big.style.fontFamily=fontStack(a);big.style.fontSize='34px';big.className='leading-none mb-1';big.style.color='#f0ead8';card.appendChild(big);var info=document.createElement('div');info.className='text-[11px] muted ui';var parts=[];if(row.name)parts.push(row.name);if(row.lat)parts.push('лат: '+row.lat);if(row.cyr)parts.push('рус: '+row.cyr);info.textContent=parts.join(' · ');card.appendChild(info);if(row.meaning){var mn=document.createElement('div');mn.className='text-[10px] muted2 ui mt-0.5';mn.textContent=row.meaning;card.appendChild(mn);}card.addEventListener('click',function(){if(a.custom)$('inputText').value+=row.rune;else if(state.dir==='rev')$('inputText').value+=row.rune;else $('inputText').value+=(row.cyr||row.lat||row.rune);showTab('translate');convert();});box.appendChild(card);});}
+function renderSymbols(){var box=$('symbolsBox');box.innerHTML='';for(var cat in SYMBOLS){var h=document.createElement('div');h.className='text-xs muted ui mb-1';h.textContent=cat;box.appendChild(h);var grid=document.createElement('div');grid.className='flex flex-wrap gap-1.5 mb-2';SYMBOLS[cat].forEach(function(s){var b=document.createElement('button');b.className='sym-btn rounded-lg w-11 h-11 flex items-center justify-center text-2xl';b.style.fontFamily=SYM_FONT;b.style.color='#f0ead8';b.textContent=s;b.title='Скопировать '+s;b.addEventListener('click',function(){navigator.clipboard.writeText(s).then(function(){toast('Скопировано: '+s);}).catch(function(){toast('Не удалось скопировать');});});grid.appendChild(b);});box.appendChild(grid);}}
+function renderPoems(){var key=$('poemSelect').value,p=POEMS[key];$('poemIntro').textContent=p.intro;var box=$('poemList');box.innerHTML='';p.verses.forEach(function(v){var row=document.createElement('div');row.className='flex items-start gap-3 card rounded-lg p-3';var g=document.createElement('div');g.textContent=v[0];g.style.fontFamily='"'+p.font+'"';g.style.fontSize='38px';g.className='leading-none';g.style.color='#e8c874';var t=document.createElement('div');t.innerHTML='<div class="display text-sm gold">'+v[1]+'</div><div class="prose text-[15px] muted mt-0.5">'+v[2]+'</div>';row.appendChild(g);row.appendChild(t);box.appendChild(row);});}
+$('poemSelect').addEventListener('change',renderPoems);
+function birthRune(month,day){var cur=[month,day];function cmp(x,y){return x[0]!==y[0]?x[0]-y[0]:x[1]-y[1];}for(var i=0;i<RUNIC_CALENDAR.length;i++){var start=RUNIC_CALENDAR[i][0],end=RUNIC_CALENDAR[(i+1)%RUNIC_CALENDAR.length][0],r=RUNIC_CALENDAR[i][1];if(cmp(start,end)<=0){if(cmp(start,cur)<=0&&cmp(cur,end)<0)return r;}else{if(cmp(cur,start)>=0||cmp(cur,end)<0)return r;}}return null;}
+function runeCard(rune,leading){var m=ELDER_META[rune]||{name:'',meaning:''};return '<div class="flex items-center gap-3 card rounded-lg p-3'+(leading?' ring-gold':'')+'"><div style="font-family:\'Noto Sans Runic\';font-size:42px;color:#e8c874" class="leading-none">'+rune+'</div><div><div class="display text-sm" style="color:#f0ead8">'+m.name+(leading?' <span class="gold text-xs">· ведущая</span>':'')+'</div><div class="text-xs muted ui">'+m.meaning+'</div></div></div>';}
+$('birthDate').addEventListener('change',function(){var v=this.value;if(!v){$('birthResult').innerHTML='';return;}var p=v.split('-');var r=birthRune(parseInt(p[1],10),parseInt(p[2],10));$('birthResult').innerHTML=r?runeCard(r,false):'<p class="text-sm muted">Не удалось определить.</p>';});
+$('nameInput').addEventListener('input',function(){var name=this.value.trim();if(!name){$('nameResult').innerHTML='';return;}var runes=forward(name,ALPHABETS[0]),uniq=[];for(var i=0;i<runes.length;i++){var c=runes[i];if(ELDER_META[c]&&uniq.indexOf(c)<0)uniq.push(c);}var html='<div class="text-3xl mb-3 text-center rounded-lg p-3" style="font-family:\'Noto Sans Runic\';background:#f4efe2;color:#1a1408">'+runes+'</div><div class="space-y-2">';uniq.forEach(function(r,idx){html+=runeCard(r,idx===0);});html+='</div>';$('nameResult').innerHTML=html;});
+function toast(msg){var t=$('toast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},1800);}
+function addHistory(){var item={a:state.alphabetId,in:$('inputText').value,out:state.lastOutput};if(!item.in)return;history=history.filter(function(h){return!(h.a===item.a&&h.in===item.in);});history.unshift(item);history=history.slice(0,12);try{localStorage.setItem('rw_history',JSON.stringify(history));}catch(e){}renderHistory();}
+function renderHistory(){var wrap=$('historyWrap'),box=$('historyChips');if(!history.length){wrap.classList.add('hidden');return;}wrap.classList.remove('hidden');box.innerHTML='';history.forEach(function(h){var b=document.createElement('button');b.className='histchip text-xs px-2 py-1 rounded truncate max-w-[160px] ui';b.textContent=h.in;b.addEventListener('click',function(){state.alphabetId=h.a;fillAlphabetSelect();$('inputText').value=h.in;convert();});box.appendChild(b);});}
+$('copyBtn').addEventListener('click',function(){var a=currentAlphabet(),text=state.lastOutput||$('outputText').textContent;navigator.clipboard.writeText(text).then(function(){toast(a.custom?'Скопированы буквы (знаки видны с этим шрифтом)':'Скопировано! ✨');addHistory();}).catch(function(){toast('Не удалось скопировать');});});
+$('pasteBtn').addEventListener('click',function(){navigator.clipboard.readText().then(function(t){$('inputText').value=t;convert();}).catch(function(){toast('Разрешите доступ к буферу');});});
+$('clearBtn').addEventListener('click',function(){$('inputText').value='';convert();});
+async function exportPNG(text,font){if(!text){toast('Сначала введите текст');return;}var size=96;try{await document.fonts.load(size+'px "'+font+'"');await document.fonts.ready;}catch(e){}var canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');ctx.font=size+'px "'+font+'"';var maxW=1200,pad=60,words=text.split(/(\s+)/),lines=[],line='';for(var i=0;i<words.length;i++){var test=line+words[i];if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=words[i].trim();}else line=test;}if(line)lines.push(line);if(!lines.length)lines=[text];var lineH=size*1.4,w=Math.min(maxW,Math.max.apply(null,lines.map(function(l){return ctx.measureText(l).width;})))+pad*2,h=lines.length*lineH+pad*2;canvas.width=Math.ceil(w);canvas.height=Math.ceil(h);ctx=canvas.getContext('2d');if(state.outBg==='light'){ctx.fillStyle='#f4efe2';ctx.fillRect(0,0,canvas.width,canvas.height);}else if(state.outBg==='dark'){ctx.fillStyle='#0a0e1a';ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.font=size+'px "'+font+'"';ctx.fillStyle=state.outBg==='dark'?'#f0ead8':'#1a1408';ctx.textBaseline='top';ctx.textAlign='center';lines.forEach(function(l,idx){ctx.fillText(l,canvas.width/2,pad+idx*lineH);});canvas.toBlob(function(blob){var url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='runes.png';document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url);},2000);toast('PNG сохранён 🖼');},'image/png');}
+$('pngBtn').addEventListener('click',function(){var a=currentAlphabet();exportPNG(state.lastOutput||$('outputText').textContent,a.font||'sans-serif');addHistory();});
+$('dirFwd').addEventListener('click',function(){state.dir='fwd';this.classList.add('on');$('dirRev').classList.remove('on');convert();});
+$('dirRev').addEventListener('click',function(){state.dir='rev';this.classList.add('on');$('dirFwd').classList.remove('on');convert();});
+$('phoneticToggle').addEventListener('change',function(){state.phonetic=this.checked;convert();});
+$('revCyrToggle').addEventListener('change',function(){state.revCyr=this.checked;convert();});
+$('sizeSlider').addEventListener('input',function(){state.size=parseInt(this.value,10);$('outputText').style.fontSize=state.size+'px';});
+$('outBg').addEventListener('change',function(){state.outBg=this.value;applyBg();});
+$('inputText').addEventListener('input',convert);
 
-/* ссылки на приложение */
-['navLaunch','heroLaunch','demoFull'].forEach(function(id){var e=$(id);if(e)e.href=APP_URL;});
+function kbAppend(s){state.kb+=s;renderKbOutput();}
+function renderKbOutput(){var a=currentAlphabet();var ot=$('kbOutput');ot.textContent=state.kb||'';ot.style.fontFamily=fontStack(a);ot.style.color=state.outBg==='dark'?'#f0ead8':'#1a1408';$('kbOutputBox').style.background=state.outBg==='dark'?'#0a0e1a':'#f4efe2';}
+function renderKeyboard(){var a=currentAlphabet();$('kbAlphaName').textContent=a.name;renderKbOutput();var box=$('kbKeys');box.innerHTML='';tableRows(a).forEach(function(row){var key=document.createElement('button');key.className='kb-key rounded-lg w-12 h-14 flex flex-col items-center justify-center';var g=document.createElement('div');g.textContent=row.rune;g.style.fontFamily=fontStack(a);g.style.fontSize='24px';g.className='leading-none';key.appendChild(g);var lbl=row.lat||row.cyr;if(lbl){var s=document.createElement('div');s.className='text-[9px] muted2 ui mt-0.5';s.textContent=lbl;key.appendChild(s);}key.addEventListener('click',function(){kbAppend(row.rune);});box.appendChild(key);});}
+$('kbSpace').addEventListener('click',function(){kbAppend(' ');});
+$('kbBack').addEventListener('click',function(){state.kb=state.kb.slice(0,-1);renderKbOutput();});
+$('kbClear').addEventListener('click',function(){state.kb='';renderKbOutput();});
+$('kbCopy').addEventListener('click',function(){navigator.clipboard.writeText(state.kb).then(function(){toast('Скопировано ✨');}).catch(function(){toast('Не удалось');});});
+$('kbPng').addEventListener('click',function(){var a=currentAlphabet();exportPNG(state.kb,a.font||'sans-serif');});
+$('kbToSend').addEventListener('click',function(){$('inputText').value=state.kb;showTab('translate');convert();});
+document.addEventListener('keydown',function(e){
+  if($('tab-keyboard').classList.contains('hidden'))return;
+  var tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select')return;
+  var a=currentAlphabet();
+  if(e.key==='Backspace'){e.preventDefault();state.kb=state.kb.slice(0,-1);renderKbOutput();return;}
+  if(e.key===' '){e.preventDefault();kbAppend(' ');return;}
+  if(e.key.length===1){var ch=e.key;if(a.custom){kbAppend(ch);}else{var r=forward(ch,a);if(r)kbAppend(r);}e.preventDefault();}
+});
 
-/* парящие руны */
-(function(){var runes='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛋᛏᛒᛖᛗᛚᛜᛞᛟ';var bg=$('runeBg');for(var i=0;i<26;i++){var s=document.createElement('span');s.className='float-rune';s.textContent=runes[Math.floor(Math.random()*runes.length)];s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.fontSize=(24+Math.random()*64)+'px';s.style.animationDuration=(6+Math.random()*10)+'s';s.style.animationDelay=(-Math.random()*10)+'s';s.style.animationName=Math.random()>.5?'drift':'twinkle';bg.appendChild(s);}})();
-
-/* демо */
-var demoKey='elder';
-function renderChips(){var box=$('demoChips');box.innerHTML='';Object.keys(AL).forEach(function(k){var b=document.createElement('button');b.className='chip px-3 py-1.5 rounded-full text-sm transition'+(k===demoKey?' active':'');b.textContent=AL[k].name;b.onclick=function(){demoKey=k;renderChips();renderDemo();};box.appendChild(b);});}
-function renderDemo(){var a=AL[demoKey];var out=fwd($('demoInput').value||'',a);var o=$('demoOutput');o.textContent=out||'ᚱᚢᚾᛖᛚᛟᛟᛗ';o.style.fontFamily='"'+a.font+'", serif';}
-$('demoInput').addEventListener('input',renderDemo);
-$('demoCopy').addEventListener('click',function(){navigator.clipboard.writeText($('demoOutput').textContent).then(function(){toast('Скопировано ✨');}).catch(function(){toast('Не удалось');});});
-renderChips();renderDemo();
-
-/* возможности */
-var FEATURES=[
- ['ᚱ','Переводчик RU + EN','Пишите по-русски или по-английски — фонетически или буква к букве, в обе стороны.'],
- ['ᛟ','13+ письменностей','Футарк, Огам, Готский, Финикийский, Глаголица, Орхонский, роваш и другие.'],
- ['ᛋ','Рунические поэмы','Англосаксонская и исландская поэмы с переводом — голос древних рун.'],
- ['ᚲ','Руническая клавиатура','Экранные кнопки и печать с обычной клавиатуры — руны появляются сразу.'],
- ['ᚠ','Свои шрифты','Руны Ведьм, Исландские руны, Кирт Толкина, Aurebesh, Theban и ваш почерк.'],
- ['ᛗ','Символы и знаки','Руны, мистические знаки, алхимия, луна и солнце — в одно касание.'],
- ['ᛞ','Руны рождения','Рунический календарь и руны имени с ведущей руной.'],
- ['ᛖ','Экспорт в PNG','Сохраните надпись картинкой — знаки видны везде, даже без шрифта.'],
- ['ᛚ','Работает офлайн','PWA: установите как приложение, данные хранятся на вашем устройстве.']
-];
-(function(){var g=$('featureGrid');FEATURES.forEach(function(f){var c=document.createElement('div');c.className='glass rounded-2xl p-6 transition fade-up';c.innerHTML='<div style="font-family:\'Noto Sans Runic\'" class="text-4xl gold mb-3">'+f[0]+'</div><h3 class="display text-lg text-[#f0ead8] mb-2">'+f[1]+'</h3><p class="text-[#cfc7b4] text-[15px] leading-relaxed">'+f[2]+'</p>';g.appendChild(c);});})();
-
-/* витрина письменностей */
-(function(){var g=$('scriptGrid');SHOWCASE.forEach(function(s){var a=s.src?AL[s.src]:{lat:s.map};var sample=fwd(s.word,a);var c=document.createElement('div');c.className='glass rounded-2xl p-6 text-center transition fade-up';c.innerHTML='<div class="sample mb-3" style="font-family:\''+s.font+'\', serif">'+sample+'</div><h3 class="display text-lg gold mb-1">'+s.name+'</h3><p class="text-[#cfc7b4] text-sm">'+s.note+'</p>';g.appendChild(c);});})();
-
-/* экосистема */
-var ECO=[
- ['ᚱ','Runeloom','Рунический переводчик и мастерская письма',APP_URL],
- ['ᛟ','rune-fonts','Шрифты: Руны Ведьм, Исландские руны','https://github.com/Lina1209/rune-fonts'],
- ['ᚠ','GlyphStudio','Свой рукописный TTF-шрифт в браузере','https://github.com/Lina1209/glyph-studio'],
- ['ᛗ','HandFont Studio','Студия создания шрифтов по почерку','https://github.com/Lina1209/handfont-studio-pro-']
-];
-(function(){var g=$('ecoGrid');ECO.forEach(function(e){var a=document.createElement('a');a.href=e[3];a.target='_blank';a.className='glass rounded-2xl p-6 text-center transition fade-up block';a.innerHTML='<div style="font-family:\'Noto Sans Runic\'" class="text-3xl gold mb-2">'+e[0]+'</div><h3 class="display text-lg text-[#f0ead8] mb-1">'+e[1]+'</h3><p class="text-[#cfc7b4] text-sm">'+e[2]+'</p>';g.appendChild(a);});})();
-
-/* появление при прокрутке */
-var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting)x.target.classList.add('in');});},{threshold:.12});
-document.querySelectorAll('.fade-up').forEach(function(e){io.observe(e);});
-
-/* полные шрифты Noto (без квадратиков) */
-async function loadFonts(){for(var i=0;i<NOTO.length;i++){var f=NOTO[i];var urls=['https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/'+f.dir+'/'+f.file,'https://raw.githubusercontent.com/google/fonts/main/ofl/'+f.dir+'/'+f.file];for(var j=0;j<urls.length;j++){try{var face=new FontFace(f.gf,'url("'+urls[j]+'")');await face.load();document.fonts.add(face);break;}catch(e){}}}renderDemo();}
-loadFonts();
-
+function renderRepoFonts(){var box=$('repoFontList');box.innerHTML='';REPO_FONTS.forEach(function(f){var row=document.createElement('div');row.className='flex items-center gap-3 card rounded-lg p-3 flex-wrap';var prev=document.createElement('div');prev.textContent='Аа Бб Aa Bb';prev.style.fontFamily='"'+f.name+'"';prev.className='text-xl flex-1 truncate min-w-[120px]';prev.style.color='#f0ead8';var use=document.createElement('button');use.className='btn text-xs px-2 py-1 rounded ui';use.textContent='Использовать';use.addEventListener('click',function(){state.alphabetId=f.id;fillAlphabetSelect();convert();showTab('translate');});var dl=document.createElement('a');dl.className='btn2 text-xs px-2 py-1 rounded ui';dl.textContent='⬇ Скачать';dl.href=repoUrls(f.file)[0];dl.download=f.file;dl.target='_blank';row.appendChild(prev);row.appendChild(use);row.appendChild(dl);box.appendChild(row);});}
+function renderFantasyFonts(){var box=$('fantasyList');box.innerHTML='';FANTASY.forEach(function(f){var row=document.createElement('div');row.className='card rounded-lg p-3';var top=document.createElement('div');top.className='flex items-center gap-2 flex-wrap';var nm=document.createElement('div');nm.className='text-sm ui flex-1';nm.style.color='#f0ead8';nm.textContent=f.name;top.appendChild(nm);var use=document.createElement('button');use.className='btn text-xs px-2 py-1 rounded ui';use.textContent='Использовать';use.addEventListener('click',function(){state.alphabetId=f.id;fillAlphabetSelect();convert();showTab('translate');});top.appendChild(use);if(f.dl){var dl=document.createElement('a');dl.className='btn2 text-xs px-2 py-1 rounded ui';dl.textContent='⬇ Шрифт';dl.href=f.dl;dl.target='_blank';top.appendChild(dl);}row.appendChild(top);var d=document.createElement('div');d.className='text-[11px] muted ui mt-1';d.textContent=f.desc;row.appendChild(d);if(f.needsUpload){var up=document.createElement('button');up.className='btn-ok text-xs px-2 py-1 rounded mt-2 ui';up.textContent=loadedFamilies['RW Theban']?'✔ Загружен — заменить':'📥 Загрузить шрифт Theban';up.addEventListener('click',function(){thebanFile.click();});row.appendChild(up);}box.appendChild(row);});}
+var thebanFile=document.createElement('input');thebanFile.type='file';thebanFile.accept='.ttf,.otf,.woff';thebanFile.style.display='none';document.body.appendChild(thebanFile);
+thebanFile.addEventListener('change',async function(){var file=this.files[0];this.value='';if(!file)return;try{var buf=await file.arrayBuffer();var rec={id:'theban',name:'Theban',family:'RW Theban',data:buf,addedAt:Date.now()};var face=new FontFace('RW Theban',buf);await face.load();document.fonts.add(face);loadedFamilies['RW Theban']=true;if(!DB)await openDB();await dbPut(rec);toast('Theban загружен ✅');renderFantasyFonts();state.alphabetId='fan:theban';fillAlphabetSelect();convert();showTab('translate');}catch(e){toast('Не удалось загрузить: '+(e.message||e));}});
+var DB=null;
+function openDB(){return new Promise(function(res,rej){var rq=indexedDB.open('runewrite-fonts',1);rq.onupgradeneeded=function(){rq.result.createObjectStore('fonts',{keyPath:'id'});};rq.onsuccess=function(){DB=rq.result;res(DB);};rq.onerror=function(){rej(rq.error);};});}
+function dbPut(rec){return new Promise(function(res,rej){var tx=DB.transaction('fonts','readwrite');tx.objectStore('fonts').put(rec);tx.oncomplete=res;tx.onerror=function(){rej(tx.error);};});}
+function dbAll(){return new Promise(function(res,rej){var tx=DB.transaction('fonts','readonly');var rq=tx.objectStore('fonts').getAll();rq.onsuccess=function(){res(rq.result||[]);};rq.onerror=function(){rej(rq.error);};});}
+function dbDel(id){return new Promise(function(res,rej){var tx=DB.transaction('fonts','readwrite');tx.objectStore('fonts').delete(id);tx.oncomplete=res;tx.onerror=function(){rej(tx.error);};});}
+async function registerFont(rec){var face=new FontFace(rec.family,rec.data);await face.load();document.fonts.add(face);loadedFamilies[rec.family]=true;}
+async function loadStoredFonts(){try{await openDB();var recs=await dbAll();for(var i=0;i<recs.length;i++){try{await registerFont(recs[i]);if(recs[i].id!=='theban')state.customFonts.push(recs[i]);}catch(e){}}fillAlphabetSelect();renderFontList();convert();}catch(e){}}
+async function handleFontFile(file){if(!file)return;if(!/\.(ttf|otf|woff)$/i.test(file.name)&&!/font\//.test(file.type)){toast('Выберите TTF / OTF / WOFF');return;}try{var buf=await file.arrayBuffer(),id='f'+Date.now().toString(36),family='rwfont_'+id,name=file.name.replace(/\.(ttf|otf|woff)$/i,''),glyphs=0;try{var ot=opentype.parse(buf.slice(0));glyphs=ot.numGlyphs||0;var fn=ot.names&&ot.names.fontFamily&&(ot.names.fontFamily.en||ot.names.fontFamily.ru);if(fn)name=fn;}catch(e){}var rec={id:id,name:name,family:family,data:buf,glyphs:glyphs,addedAt:Date.now()};await registerFont(rec);if(!DB)await openDB();await dbPut(rec);state.customFonts.push(rec);fillAlphabetSelect();renderFontList();state.alphabetId='custom:'+id;fillAlphabetSelect();convert();toast('Шрифт «'+name+'» добавлен ✅');showTab('translate');}catch(e){toast('Не удалось загрузить шрифт: '+(e.message||e));}}
+function renderFontList(){var box=$('fontList');box.innerHTML='';if(!state.customFonts.length){box.innerHTML='<p class="text-xs muted2 ui">Пока нет загруженных шрифтов.</p>';return;}state.customFonts.forEach(function(f){var row=document.createElement('div');row.className='flex items-center gap-3 card rounded-lg p-3';var prev=document.createElement('div');prev.textContent='Аа Бб Вв Aa Bb';prev.style.fontFamily='"'+f.family+'"';prev.className='text-xl flex-1 truncate';prev.style.color='#f0ead8';var info=document.createElement('div');info.className='text-xs muted ui';info.textContent=f.name+(f.glyphs?(' · '+f.glyphs+' зн.'):'');var use=document.createElement('button');use.className='btn text-xs px-2 py-1 rounded ui';use.textContent='Выбрать';use.addEventListener('click',function(){state.alphabetId='custom:'+f.id;fillAlphabetSelect();convert();showTab('translate');});var del=document.createElement('button');del.className='btn-danger text-xs px-2 py-1 rounded ui';del.textContent='🗑';del.addEventListener('click',async function(){await dbDel(f.id);state.customFonts=state.customFonts.filter(function(x){return x.id!==f.id;});if(state.alphabetId==='custom:'+f.id)state.alphabetId='elder';fillAlphabetSelect();renderFontList();convert();});row.appendChild(prev);row.appendChild(info);row.appendChild(use);row.appendChild(del);box.appendChild(row);});}
+var dz=$('dropZone'),fi=$('fontFile');dz.addEventListener('click',function(){fi.click();});fi.addEventListener('change',function(){if(this.files[0])handleFontFile(this.files[0]);this.value='';});dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag');});dz.addEventListener('dragleave',function(){dz.classList.remove('drag');});dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])handleFontFile(e.dataTransfer.files[0]);});
+async function loadAllFonts(){var tasks=[];NOTO_FONTS.forEach(function(f){tasks.push(tryLoadFont(f.gf,notoUrls(f)));});REPO_FONTS.forEach(function(f){tasks.push(tryLoadFont(f.name,repoUrls(f.file)));});FANTASY.forEach(function(f){if(f.urls)tasks.push(tryLoadFont(f.font,f.urls));});await Promise.all(tasks.map(function(p){return p.catch(function(){return false;});}));$('fontStatus').textContent='✔ шрифты';convert();renderAlphabetTable();renderSymbols();renderRepoFonts();renderFantasyFonts();renderKeyboard();}
+(function(){var runes='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛋᛏᛒᛖᛗᛚᛜᛞᛟ';var bg=$('runeBg');for(var i=0;i<22;i++){var s=document.createElement('span');s.className='float-rune';s.textContent=runes[Math.floor(Math.random()*runes.length)];s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.fontSize=(22+Math.random()*54)+'px';s.style.animationDuration=(7+Math.random()*10)+'s';s.style.animationDelay=(-Math.random()*10)+'s';bg.appendChild(s);}})();
+var deferredPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden');});
+$('installBtn').addEventListener('click',async function(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;$('installBtn').classList.add('hidden');}});
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}
+fillAlphabetSelect();convert();renderHistory();renderSymbols();renderRepoFonts();renderFantasyFonts();renderPoems();renderKeyboard();loadStoredFonts();loadAllFonts();
 })();
 </script>
 </body>
