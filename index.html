@@ -215,7 +215,7 @@ var FANTASY=[
   urls:['https://cdn.jsdelivr.net/gh/LogicismDev/aurebesh-discord-font@main/fonts/AurebeshAF-Canon.woff2','https://cdn.jsdelivr.net/gh/southaki/contentDeliveryNetwork@main/font-family/Aurebesh.ttf'],dl:'https://aurekfonts.github.io/'},
  {id:'fan:theban',name:'Theban (алфавит ведьм)',font:'RW Theban',needsUpload:true,desc:'Алфавит ведьм Theban. Загрузите шрифт один раз (кнопка ниже).',dl:'https://www.1001fonts.com/theban-alphabet-font.html'}
 ];
-function notoUrls(f){var urls=['https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/'+f.dir+'/'+f.file,'https://raw.githubusercontent.com/google/fonts/main/ofl/'+f.dir+'/'+f.file];if(f.gf==='Noto Sans Runic')urls=['https://cdn.jsdelivr.net/gh/notofonts/runic@main/NotoSansRunic/googlefonts/ttf/NotoSansRunic-Regular.ttf','https://raw.githubusercontent.com/notofonts/runic/main/NotoSansRunic/googlefonts/ttf/NotoSansRunic-Regular.ttf'].concat(urls);return urls;}
+function notoUrls(f){var urls=['https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/'+f.dir+'/'+f.file,'https://raw.githubusercontent.com/google/fonts/main/ofl/'+f.dir+'/'+f.file];if(f.gf==='Noto Sans Runic')urls=['https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosansrunic/NotoSansRunic-Regular.ttf','https://raw.githubusercontent.com/google/fonts/main/ofl/notosansrunic/NotoSansRunic-Regular.ttf'];return urls;}
 function repoUrls(file){var path=encodeURIComponent(file);return['https://cdn.jsdelivr.net/gh/Lina1209/-@main/'+path,'https://raw.githubusercontent.com/Lina1209/-/main/'+path];}
 var loadedFamilies={};
 async function tryLoadFont(family,urls){for(var i=0;i<urls.length;i++){try{var f=new FontFace(family,'url("'+urls[i]+'")');await f.load();document.fonts.add(f);loadedFamilies[family]=true;return true;}catch(e){}}return false;}
