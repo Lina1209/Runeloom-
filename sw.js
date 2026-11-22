@@ -1,7 +1,7 @@
 /* Runeloom PWA Service Worker — scoped, bounded, privacy-conscious cache. */
 'use strict';
 const CACHE_PREFIX = 'runeloom-shell-';
-const CACHE_NAME = CACHE_PREFIX + 'v4';
+const CACHE_NAME = CACHE_PREFIX + 'v5';
 const SHELL = ['./', './index.html', './manifest.json', './icon.svg'];
 const SHELL_PATHS = new Set(SHELL.map((p) => new URL(p, self.location.href).pathname));
 
